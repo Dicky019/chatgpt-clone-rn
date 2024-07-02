@@ -1,31 +1,21 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
+import { Slot, SplashScreen, Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/components/useColorScheme';
-
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
-
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
-};
+import { Ionicons } from '@expo/vector-icons';
+import { TouchableOpacity } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { AuthProvider, useAuth } from '@/hooks/Auth';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+const InitialLayout = () => {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    ...FontAwesome.font,
   });
+  const { user } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
@@ -38,22 +28,58 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
+  useEffect(() => {
+    // if (!isLoaded) return;
+
+    const inAuthGroup = segments[0] === '(auth)';
+
+    if (user && !inAuthGroup) {
+      router.replace('/(auth)/');
+    } else if (!user) {
+      router.replace('/');
+    }
+  }, [user]);
+
+  if (!loaded || !user) {
+    return <Slot />;
   }
 
-  return <RootLayoutNav />;
-}
-
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-    </ThemeProvider>
+    <Stack>
+      <Stack.Screen
+        name="index"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="login"
+        options={{
+          presentation: 'modal',
+          title: '',
+          headerTitleStyle: {
+            fontFamily: 'mon-sb',
+          },
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()}>
+              <Ionicons name="close-outline" size={28} />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+    </Stack>
   );
-}
+};
+
+const RootLayoutNav = () => {
+  return (
+    <AuthProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <InitialLayout />
+      </GestureHandlerRootView>
+    </AuthProvider>
+  );
+};
+
+export default RootLayoutNav;
