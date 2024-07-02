@@ -29,12 +29,10 @@ const InitialLayout = () => {
   }, [loaded]);
 
   useEffect(() => {
-    // if (!isLoaded) return;
-
     const inAuthGroup = segments[0] === '(auth)';
 
     if (user && !inAuthGroup) {
-      router.replace('/(auth)/');
+      router.replace('/(auth)/(drawer)/(chat)/new');
     } else if (!user) {
       router.replace('/');
     }

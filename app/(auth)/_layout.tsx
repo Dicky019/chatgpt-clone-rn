@@ -1,45 +1,80 @@
-import React from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
-
 import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import { keyStorage } from '@/utils/Storage';
+import { Ionicons } from '@expo/vector-icons';
+import { Stack, useRouter } from 'expo-router';
+import { Alert, TouchableOpacity } from 'react-native';
+import { useMMKVString } from 'react-native-mmkv';
 
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
+// import { SQLiteProvider } from 'expo-sqlite/next';
+// import { migrateDbIfNeeded } from '@/utils/Database';
+// import { RevenueCatProvider } from '@/providers/RevenueCat';
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+const Layout = () => {
+  const router = useRouter();
+  const [key] = useMMKVString('apikey', keyStorage);
 
   return (
-    <Tabs
+    <Stack
       screenOptions={{
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
+        contentStyle: { backgroundColor: Colors.selected },
       }}>
-      <Tabs.Screen
-        name="index"
+      <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="(modal)/settings"
         options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-
+          headerTitle: 'Settings',
+          presentation: 'modal',
+          headerShadowVisible: false,
+          headerStyle: { backgroundColor: Colors.selected },
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={() => {
+                if (key) {
+                  router.back()
+                }
+                Alert.alert("Error", "Your Key Empty")
+              }}
+              style={{ backgroundColor: Colors.greyLight, borderRadius: 20, padding: 4 }}>
+              <Ionicons name="close-outline" size={16} color={Colors.grey} />
+            </TouchableOpacity>
+          ),
         }}
       />
-      <Tabs.Screen
-        name="two"
+      <Stack.Screen
+        name="(modal)/image/[url]"
         options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          headerTitle: '',
+          presentation: 'fullScreenModal',
+          headerBlurEffect: 'dark',
+          headerStyle: { backgroundColor: 'rgba(0,0,0,0.4)' },
+          headerTransparent: true,
+          headerShadowVisible: false,
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ borderRadius: 20, padding: 4 }}>
+              <Ionicons name="close-outline" size={28} color={'#fff'} />
+            </TouchableOpacity>
+          ),
         }}
       />
-    </Tabs>
+      {/* <Stack.Screen
+            name="(modal)/purchase"
+            options={{
+              headerTitle: '',
+              presentation: 'fullScreenModal',
+              headerShadowVisible: false,
+              headerLeft: () => (
+                <TouchableOpacity
+                  onPress={() => router.back()}
+                  style={{ borderRadius: 20, padding: 4 }}>
+                  <Ionicons name="close-outline" size={28} color={Colors.greyLight} />
+                </TouchableOpacity>
+              ),
+            }}
+          /> */}
+    </Stack>
   );
-}
+};
+
+export default Layout;

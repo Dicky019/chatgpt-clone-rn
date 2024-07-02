@@ -14,7 +14,9 @@ interface AuthContextProps {
 }
 
 const AuthContext = createContext<AuthContextProps>({
-    session: null, user: null, signOut: () => supabase.auth.signOut(),
+    session: null,
+    user: null,
+    signOut: () => supabase.auth.signOut(),
     signInEmail: (email: string, password: string) => supabase.auth.signInWithPassword({
         email: email,
         password: password,
@@ -40,7 +42,7 @@ export const AuthProvider = ({ children }: any) => {
         };
 
         const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-            console.log("🚀 ~ const{data:listener}=supabase.auth.onAuthStateChange ~ session:", session?.user)
+            console.log("🚀 ~ const{data:listener}=supabase.auth.onAuthStateChange ~ session:", session?.user.id)
             setSession(session);
             setUser(session?.user)
             setLoading(false)
