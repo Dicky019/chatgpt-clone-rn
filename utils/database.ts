@@ -1,10 +1,10 @@
 import { Message, Role } from "@/utils/interfaces";
 import { supabase } from "./supabase";
 
-export const addChat = async (title: string) => {
+export const addChat = async (title: string, userId: string) => {
   const { data, error } = await supabase
     .from("chats")
-    .insert({ title })
+    .insert({ title, user_id: userId })
     .select("id") // Select the id field of the inserted row
     .single(); // Ensure only a single row is returned
 

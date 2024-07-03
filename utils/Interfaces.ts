@@ -11,6 +11,6 @@ export interface Message {
 }
 
 export interface Chat {
-  id: number;
+  id: string;
   title: string;
 }
