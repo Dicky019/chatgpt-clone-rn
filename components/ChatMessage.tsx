@@ -1,6 +1,6 @@
 import Colors from '@/constants/Colors';
-import { copyImageToClipboard, downloadAndSaveImage, shareImage } from '@/utils/Image';
-import { Message, Role } from '@/utils/Interfaces';
+import { copyImageToClipboard, downloadAndSaveImage, shareImage } from '@/utils/image';
+import { Message, Role } from '@/utils/interfaces';
 import { Link } from 'expo-router';
 import { View, Text, StyleSheet, Image, ActivityIndicator, Pressable } from 'react-native';
 import * as ContextMenu from 'zeego/context-menu';
@@ -51,8 +51,13 @@ const ChatMessage = ({
                   </Pressable>
                 </Link>
               </ContextMenu.Trigger>
-              <ContextMenu.Content>
-                {contextItems.map((item, index) => (
+              <ContextMenu.Content
+                alignOffset={0}
+                avoidCollisions
+                collisionPadding={0}
+                loop={false}
+              >
+                {contextItems.map((item) => (
                   <ContextMenu.Item key={item.title} onSelect={item.action}>
                     <ContextMenu.ItemTitle>{item.title}</ContextMenu.ItemTitle>
                     <ContextMenu.ItemIcon

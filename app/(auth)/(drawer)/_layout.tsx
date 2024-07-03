@@ -17,17 +17,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { DrawerActions } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
-// import { getChats, renameChat } from '@/utils/Database';
-// import { useSQLiteContext } from 'expo-sqlite/next';
 import { useDrawerStatus } from '@react-navigation/drawer';
-import { Chat } from '@/utils/Interfaces';
+import { Chat } from '@/utils/interfaces';
 import * as ContextMenu from 'zeego/context-menu';
-// import { useRevenueCat } from '@/providers/RevenueCat';
 import { Keyboard } from 'react-native';
+import { useAuth } from '@/hooks/Auth';
+import { getChats } from '@/utils/database';
 
 export const CustomDrawerContent = (props: any) => {
   const { bottom, top } = useSafeAreaInsets();
-  // const db = useSQLiteContext();
+  const { user } = useAuth()
   const isDrawerOpen = useDrawerStatus() === 'open';
   const [history, setHistory] = useState<Chat[]>([]);
   const router = useRouter();
@@ -39,8 +38,9 @@ export const CustomDrawerContent = (props: any) => {
 
   const loadChats = async () => {
     // Load chats from SQLite
-    // const result = (await getChats(db)) as Chat[];
-    setHistory([]);
+    const result = (await getChats()) as Chat[];
+    console.log("🚀 ~ loadChats ~ result:", result)
+    setHistory(result);
   };
 
   const onDeleteChat = (chatId: number) => {
@@ -145,7 +145,7 @@ export const CustomDrawerContent = (props: any) => {
               source={{ uri: 'https://galaxies.dev/img/meerkat_2.jpg' }}
               style={styles.avatar}
             />
-            <Text style={styles.userName}>Mika Meerkat</Text>
+            <Text style={styles.userName}>{user?.email ?? ""}</Text>
             <Ionicons name="ellipsis-horizontal" size={24} color={Colors.greyLight} />
           </TouchableOpacity>
         </Link>

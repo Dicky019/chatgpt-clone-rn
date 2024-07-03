@@ -1288,6 +1288,8 @@ PODS:
     - ComputableLayout (~> 0.7)
     - DGSwiftUtilities (~> 0.17)
     - ExpoModulesCore
+  - ReactNativeOpenAI (0.6.1):
+    - React-Core
   - RNCAsyncStorage (1.23.1):
     - React-Core
   - RNFlashList (1.6.4):
@@ -1439,6 +1441,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeIosContextMenu (from `../node_modules/react-native-ios-context-menu`)
   - ReactNativeIosUtilities (from `../node_modules/react-native-ios-utilities`)
+  - ReactNativeOpenAI (from `../node_modules/react-native-openai`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNFlashList (from `../node_modules/@shopify/flash-list`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
@@ -1611,6 +1614,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-ios-context-menu"
   ReactNativeIosUtilities:
     :path: "../node_modules/react-native-ios-utilities"
+  ReactNativeOpenAI:
+    :path: "../node_modules/react-native-openai"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNFlashList:
@@ -1707,6 +1712,7 @@ SPEC CHECKSUMS:
   ReactCommon: ecad995f26e0d1e24061f60f4e5d74782f003f12
   ReactNativeIosContextMenu: e5f972174bd78ab3a552bd6ee4745762ffaa42b3
   ReactNativeIosUtilities: 638290fbfaa093c1b50d1f926715d77cabcae759
+  ReactNativeOpenAI: d849415ed6a087108b69f97dec8e08fb3f524e93
   RNCAsyncStorage: 826b603ae9c0f88b5ac4e956801f755109fa4d5c
   RNFlashList: b521ebdd7f9352673817f1d98e8bdc0c8cf8545b
   RNGestureHandler: 2282cfbcf86c360d29f44ace393203afd5c6cff7

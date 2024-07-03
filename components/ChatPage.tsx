@@ -1,29 +1,29 @@
 import HeaderDropDown from '@/components/HeaderDropDown';
 import MessageInput from '@/components/MessageInput';
 import { defaultStyles } from '@/constants/Styles';
-import { keyStorage, storage } from '@/utils/Storage';
+import { keyStorage, storage } from '@/utils/storage';
 import { Redirect, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Image, View, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useMMKVString } from 'react-native-mmkv';
-// import OpenAI from 'react-native-openai';
 import { FlashList } from '@shopify/flash-list';
 import ChatMessage from '@/components/ChatMessage';
-import { Message, Role } from '@/utils/Interfaces';
+import { Message, Role } from '@/utils/interfaces';
 import MessageIdeas from '@/components/MessageIdeas';
-// import { addChat, addMessage, getMessages } from '@/utils/Database';
+import { addChat, addMessage, getMessages } from '@/utils/database';
+import OpenAI from 'react-native-openai';
 // import { useSQLiteContext } from 'expo-sqlite/next';
 
 const ChatPage = () => {
   const [gptVersion, setGptVersion] = useMMKVString('gptVersion', storage);
   const [height, setHeight] = useState(0);
-  const [key] = useMMKVString('apikey', keyStorage);
-  const [organization, setOrganization] = useMMKVString('org', keyStorage);
+  const [apiKey] = useMMKVString('apikey', keyStorage);
+  const [organization] = useMMKVString('org', keyStorage);
   const [messages, setMessages] = useState<Message[]>([]);
   // const db = useSQLiteContext();
   let { id } = useLocalSearchParams<{ id: string }>();
 
-  if (!key || key === '' || !organization || organization === '') {
+  if (!apiKey || apiKey === '' || !organization || organization === '') {
     return <Redirect href={'/(auth)/(modal)/settings'} />;
   }
 
@@ -37,45 +37,50 @@ const ChatPage = () => {
 
   useEffect(() => {
     if (id) {
-      // getMessages(db, parseInt(id)).then((res) => {
-      //   setMessages(res);
-      // });
+      getMessages(id).then((res) => {
+        setMessages(res);
+      });
     }
   }, [id]);
 
-  // const openAI = useMemo(
-  //   () =>
-  //     new OpenAI({
-  //       apiKey: key,
-  //       organization,
-  //     }),
-  //   []
-  // );
+  const openAI = useMemo(
+    () =>
+      new OpenAI({
+        apiKey,
+        organization,
+      }),
+    []
+  );
 
   useEffect(() => {
     const handleNewMessage = (payload: any) => {
+      // console.log("🚀 ~ handleNewMessage ~ payload:", payload)
       setMessages((messages) => {
-        const newMessage = payload.choices[0]?.delta.content;
+        const newMessage = payload.choices[0]?.delta?.content;
+        console.log("🚀 ~ setMessages ~ newMessage:", newMessage)
+
         if (newMessage) {
+          console.log({ messages });
+
           messages[messages.length - 1].content += newMessage;
           return [...messages];
         }
         if (payload.choices[0]?.finishReason) {
           // save the last message
 
-          // addMessage(db, parseInt(chatIdRef.current), {
-          //   content: messages[messages.length - 1].content,
-          //   role: Role.Bot,
-          // });
+          addMessage(chatIdRef.current ?? "", {
+            content: messages[messages.length - 1].content,
+            role: Role.Bot,
+          });
         }
         return messages;
       });
     };
 
-    // openAI.chat.addListener('onChatMessageReceived', handleNewMessage);
+    openAI.chat.addListener('onChatMessageReceived', handleNewMessage);
 
     return () => {
-      // openAI.chat.removeListener('onChatMessageReceived');
+      openAI.chat.removeListener('onChatMessageReceived');
     };
   }, []);
 
@@ -89,25 +94,27 @@ const ChatPage = () => {
   };
 
   const getCompletion = async (text: string) => {
+    console.log(text);
+
     if (messages.length === 0) {
-      // addChat(db, text).then((res) => {
-      //   const chatID = res.lastInsertRowId;
-      //   setChatId(chatID.toString());
-      //   addMessage(db, chatID, { content: text, role: Role.User });
-      // });
+      addChat(text).then((res) => {
+        const chatID = res;
+        setChatId(chatID.toString());
+        addMessage(chatID, { content: text, role: Role.User });
+      });
     }
 
     setMessages([...messages, { role: Role.User, content: text }, { role: Role.Bot, content: '' }]);
-    messages.push();
-    // openAI.chat.stream({
-    //   messages: [
-    //     {
-    //       role: 'user',
-    //       content: text,
-    //     },
-    //   ],
-    //   model: gptVersion == '4' ? 'gpt-4' : 'gpt-3.5-turbo',
-    // });
+
+    openAI.chat.stream({
+      messages: [
+        {
+          role: 'user',
+          content: text,
+        },
+      ],
+      model: gptVersion == '4' ? 'gpt-4' : 'gpt-3.5-turbo',
+    });
   };
 
   return (

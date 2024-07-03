@@ -4,7 +4,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ImageZoom } from '@likashefqet/react-native-image-zoom';
-import { downloadAndSaveImage, shareImage } from '@/utils/Image';
+import { downloadAndSaveImage, shareImage } from '@/utils/image';
 import DropDownMenu from '@/components/DropDownMenu';
 import {
   BottomSheetModal,

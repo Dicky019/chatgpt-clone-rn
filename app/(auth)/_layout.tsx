@@ -1,17 +1,14 @@
 import Colors from '@/constants/Colors';
-import { keyStorage } from '@/utils/Storage';
+import { keyStorage } from '@/utils/storage';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { Alert, TouchableOpacity } from 'react-native';
 import { useMMKVString } from 'react-native-mmkv';
 
-// import { SQLiteProvider } from 'expo-sqlite/next';
-// import { migrateDbIfNeeded } from '@/utils/Database';
-// import { RevenueCatProvider } from '@/providers/RevenueCat';
-
 const Layout = () => {
   const router = useRouter();
   const [key] = useMMKVString('apikey', keyStorage);
+  const [organization] = useMMKVString('org', keyStorage);
 
   return (
     <Stack
@@ -26,13 +23,13 @@ const Layout = () => {
           presentation: 'modal',
           headerShadowVisible: false,
           headerStyle: { backgroundColor: Colors.selected },
-          headerRight: () => (
+          headerRight: !(key && organization) ? undefined : () => (
             <TouchableOpacity
               onPress={() => {
-                if (key) {
-                  router.back()
+                if (!(key && organization && router.canGoBack())) {
+                  Alert.alert("Error", "Your Key Empty")
                 }
-                Alert.alert("Error", "Your Key Empty")
+                router.back()
               }}
               style={{ backgroundColor: Colors.greyLight, borderRadius: 20, padding: 4 }}>
               <Ionicons name="close-outline" size={16} color={Colors.grey} />
