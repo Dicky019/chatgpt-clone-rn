@@ -47,6 +47,11 @@ const ChatPage = () => {
   useEffect(() => {
     if (id) {
       getMessages(id).then((res) => {
+        console.log(
+          "🚀 ~ getMessages ~ res:",
+          res.map((v) => ({ role: v.role, content: v.content }))
+        );
+
         setMessages(res);
       });
     }
@@ -117,6 +122,8 @@ const ChatPage = () => {
         setChatId(chatID.toString());
         addMessage(chatID, { content: text, role: Role.User });
       });
+    } else {
+      addMessage(id ?? "", { content: text, role: Role.User });
     }
 
     setMessages([

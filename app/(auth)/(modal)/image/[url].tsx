@@ -1,29 +1,38 @@
-import { Ionicons, Octicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
-import { Stack, useLocalSearchParams } from 'expo-router';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ImageZoom } from '@likashefqet/react-native-image-zoom';
-import { downloadAndSaveImage, shareImage } from '@/utils/image';
-import DropDownMenu from '@/components/DropDownMenu';
+import { Ionicons, Octicons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
+import { Stack, useLocalSearchParams } from "expo-router";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Pressable,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ImageZoom } from "@likashefqet/react-native-image-zoom";
+import { downloadAndSaveImage, shareImage } from "@/utils/image";
+import DropDownMenu from "@/components/DropDownMenu";
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
   BottomSheetScrollView,
-} from '@gorhom/bottom-sheet';
-import { useCallback, useMemo, useRef } from 'react';
-import Colors from '@/constants/Colors';
-import { defaultStyles } from '@/constants/Styles';
-import * as Clipboard from 'expo-clipboard';
-import Toast from 'react-native-root-toast';
-import { RootSiblingParent } from 'react-native-root-siblings';
+} from "@gorhom/bottom-sheet";
+import { useCallback, useMemo, useRef } from "react";
+import Colors from "@/constants/Colors";
+import { defaultStyles } from "@/constants/Styles";
+import * as Clipboard from "expo-clipboard";
+import Toast from "react-native-root-toast";
+import { RootSiblingParent } from "react-native-root-siblings";
 
 const Page = () => {
-  const { url, prompt } = useLocalSearchParams<{ url: string; prompt?: string }>();
+  const { url, prompt } = useLocalSearchParams<{
+    url: string;
+    prompt?: string;
+  }>();
   const { bottom } = useSafeAreaInsets();
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ['40%'], []);
+  const snapPoints = useMemo(() => ["40%"], []);
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
   }, []);
@@ -35,7 +44,7 @@ const Page = () => {
   const onCopyPrompt = () => {
     Clipboard.setStringAsync(prompt!);
 
-    Toast.show('Prompt copied to clipboard', {
+    Toast.show("Prompt copied to clipboard", {
       duration: Toast.durations.SHORT,
       position: Toast.positions.BOTTOM,
       shadow: true,
@@ -54,8 +63,12 @@ const Page = () => {
               headerRight: () => (
                 <DropDownMenu
                   items={[
-                    { key: '1', title: 'View prompt', icon: 'info.circle' },
-                    { key: '2', title: 'Learn more', icon: 'questionmark.circle' },
+                    { key: "1", title: "View prompt", icon: "info.circle" },
+                    {
+                      key: "2",
+                      title: "Learn more",
+                      icon: "questionmark.circle",
+                    },
                   ]}
                   onSelect={handlePresentModalPress}
                 />
@@ -76,24 +89,33 @@ const Page = () => {
 
           <BlurView
             intensity={95}
-            tint={'dark'}
-            style={[styles.blurview, { paddingBottom: bottom }]}>
+            tint={"dark"}
+            style={[styles.blurview, { paddingBottom: bottom }]}
+          >
             <View style={styles.row}>
-              <TouchableOpacity style={{ alignItems: 'center' }}>
-                <Ionicons name="chatbubble-ellipses-outline" size={24} color="white" />
+              <TouchableOpacity style={{ alignItems: "center" }}>
+                <Ionicons
+                  name="chatbubble-ellipses-outline"
+                  size={24}
+                  color="white"
+                />
                 <Text style={styles.btnText}>Edit</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={{ alignItems: 'center' }}>
+              <TouchableOpacity style={{ alignItems: "center" }}>
                 <Ionicons name="brush-outline" size={24} color="white" />
                 <Text style={styles.btnText}>Select</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={{ alignItems: 'center' }}
-                onPress={() => downloadAndSaveImage(url ?? "")}>
+                style={{ alignItems: "center" }}
+                onPress={() => downloadAndSaveImage(url ?? "")}
+              >
                 <Octicons name="download" size={24} color="white" />
                 <Text style={styles.btnText}>Save</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => shareImage(url ?? "")}>
+              <TouchableOpacity
+                style={{ alignItems: "center" }}
+                onPress={() => shareImage(url ?? "")}
+              >
                 <Octicons name="share" size={24} color="white" />
                 <Text style={styles.btnText}>Share</Text>
               </TouchableOpacity>
@@ -106,22 +128,41 @@ const Page = () => {
           index={0}
           snapPoints={snapPoints}
           backgroundStyle={{ backgroundColor: Colors.grey }}
-          handleIndicatorStyle={{ backgroundColor: Colors.greyLight }}>
-          <View style={[styles.modalContainer, { paddingBottom: bottom, flex: 1 }]}>
+          handleIndicatorStyle={{ backgroundColor: Colors.greyLight }}
+        >
+          <View
+            style={[styles.modalContainer, { paddingBottom: bottom, flex: 1 }]}
+          >
             <BottomSheetScrollView>
               <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Text style={styles.titleText}>Prompt</Text>
-                  <Pressable onPress={handleCloseModalPress} style={styles.closeBtn}>
-                    <Ionicons name="close-outline" size={24} color={Colors.greyLight} />
+                  <Pressable
+                    onPress={handleCloseModalPress}
+                    style={styles.closeBtn}
+                  >
+                    <Ionicons
+                      name="close-outline"
+                      size={24}
+                      color={Colors.greyLight}
+                    />
                   </Pressable>
                 </View>
                 <Text style={styles.promptText}>{prompt}</Text>
               </View>
             </BottomSheetScrollView>
             <TouchableOpacity
-              style={[defaultStyles.btn, { backgroundColor: '#fff', marginTop: 16 }]}
-              onPress={onCopyPrompt}>
+              style={[
+                defaultStyles.btn,
+                { backgroundColor: "#fff", marginTop: 16 },
+              ]}
+              onPress={onCopyPrompt}
+            >
               <Text style={styles.buttonText}>Copy</Text>
             </TouchableOpacity>
           </View>
@@ -134,28 +175,28 @@ const Page = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#000",
   },
   blurview: {
-    width: '100%',
-    position: 'absolute',
+    width: "100%",
+    position: "absolute",
     bottom: 0,
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 32,
     paddingVertical: 16,
   },
   image: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   btnText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 12,
     paddingTop: 6,
   },
@@ -164,28 +205,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   titleText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
   },
   promptText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
   buttonText: {
     color: Colors.grey,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   closeBtn: {
     backgroundColor: Colors.dark,
     borderRadius: 20,
     height: 26,
     width: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 export default Page;

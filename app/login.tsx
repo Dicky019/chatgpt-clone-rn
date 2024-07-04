@@ -1,8 +1,8 @@
-import Colors from '@/constants/Colors';
-import { defaultStyles } from '@/constants/Styles';
-import { useAuth } from '@/hooks/Auth';
-import { useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import Colors from "@/constants/Colors";
+import { defaultStyles } from "@/constants/Styles";
+import { useAuth } from "@/hooks/Auth";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useState } from "react";
 import {
   View,
   StyleSheet,
@@ -14,47 +14,69 @@ import {
   KeyboardAvoidingView,
   Image,
   Platform,
-} from 'react-native';
+} from "react-native";
 
 const Login = () => {
   const { type } = useLocalSearchParams<{ type: string }>();
-  const { signInEmail, signUpEmail } = useAuth()
+  const { signInEmail, signUpEmail } = useAuth();
 
-  const [email, setEmailAddress] = useState('');
-  const [password, setPassword] = useState('');
+  const isLogin = type === "login";
+
+  const [email, setEmailAddress] = useState(
+    isLogin ? "dicky93darmawan@gmail.com" : ""
+  );
+  const [password, setPassword] = useState("000085Dd@");
   const [loading, setLoading] = useState(false);
+
+  const goNewChat = () => {
+    router.replace("/(auth)/(drawer)/(chat)/new");
+  };
+
+  const goBack = () => {
+    router.back();
+  };
 
   const onSignInPress = async () => {
     setLoading(true);
-    const { error } = await signInEmail(email, password)
+    const { error } = await signInEmail(email, password);
 
     if (error) Alert.alert("Sign In Error", error.message);
+    goNewChat();
     setLoading(false);
   };
 
   const onSignUpPress = async () => {
     setLoading(true);
-    const { error, data } = await signUpEmail(email, password)
-    console.log("🚀 ~ onSignUpPress ~ data:", data)
+    const { error, data } = await signUpEmail(email, password);
+    console.log("🚀 ~ onSignUpPress ~ data:", data);
 
     if (error) Alert.alert("Sign In Error", error.message);
+    if (data) {
+      goBack();
+    }
     setLoading(false);
   };
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={70}
-      style={styles.container}>
+      style={styles.container}
+    >
       {loading && (
         <View style={defaultStyles.loadingOverlay}>
           <ActivityIndicator size="large" color="#fff" />
         </View>
       )}
 
-      <Image source={require('../assets/images/logo-dark.png')} style={styles.logo} />
+      <Image
+        source={require("../assets/images/logo-dark.png")}
+        style={styles.logo}
+      />
 
-      <Text style={styles.title}>{type === 'login' ? 'Welcome back' : 'Create your account'}</Text>
+      <Text style={styles.title}>
+        {type === "login" ? "Welcome back" : "Create your account"}
+      </Text>
       <View style={{ marginBottom: 30 }}>
         <TextInput
           autoCapitalize="none"
@@ -72,12 +94,18 @@ const Login = () => {
         />
       </View>
 
-      {type === 'login' ? (
-        <TouchableOpacity style={[defaultStyles.btn, styles.btnPrimary]} onPress={onSignInPress}>
+      {isLogin ? (
+        <TouchableOpacity
+          style={[defaultStyles.btn, styles.btnPrimary]}
+          onPress={onSignInPress}
+        >
           <Text style={styles.btnPrimaryText}>Login</Text>
         </TouchableOpacity>
       ) : (
-        <TouchableOpacity style={[defaultStyles.btn, styles.btnPrimary]} onPress={onSignUpPress}>
+        <TouchableOpacity
+          style={[defaultStyles.btn, styles.btnPrimary]}
+          onPress={onSignUpPress}
+        >
           <Text style={styles.btnPrimaryText}>Create account</Text>
         </TouchableOpacity>
       )}
@@ -94,14 +122,14 @@ const styles = StyleSheet.create({
   logo: {
     width: 60,
     height: 60,
-    alignSelf: 'center',
+    alignSelf: "center",
     marginVertical: 80,
   },
   title: {
     fontSize: 30,
     marginBottom: 20,
-    fontWeight: 'bold',
-    alignSelf: 'center',
+    fontWeight: "bold",
+    alignSelf: "center",
   },
   inputField: {
     marginVertical: 4,
@@ -110,14 +138,14 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     borderRadius: 12,
     padding: 10,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   btnPrimary: {
     backgroundColor: Colors.primary,
     marginVertical: 4,
   },
   btnPrimaryText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
 });

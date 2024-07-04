@@ -1,7 +1,14 @@
 import Colors from "@/constants/Colors";
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { ReactNode } from "react";
-import { GestureResponderEvent, View, ViewStyle, Text } from "react-native";
+import {
+  GestureResponderEvent,
+  View,
+  ViewStyle,
+  Text,
+  TextInput,
+  TextInputProps,
+} from "react-native";
 
 export const ListContainer = React.memo(
   (props: { style?: ViewStyle; children: any }) => {
@@ -25,6 +32,8 @@ export interface IListItemProp {
   hasPage?: ReactNode;
   subContentStyle?: ViewStyle;
   onPress?: (event: GestureResponderEvent) => void;
+  textInput: TextInputProps;
+  isEdit: boolean;
 }
 
 export const ListItem = React.memo((props: IListItemProp) => {
@@ -48,11 +57,24 @@ export const ListItem = React.memo((props: IListItemProp) => {
           props.subContentStyle,
         ]}
       >
-        <Text
+        {/* <Text
           style={{ fontSize: 18, color: Colors.bold_text, fontWeight: "500" }}
         >
           {props.title}
-        </Text>
+        </Text> */}
+        {props.isEdit ? (
+          <TextInput
+            style={{ fontSize: 18, color: Colors.bold_text, fontWeight: "500" }}
+            {...props.textInput}
+          />
+        ) : (
+          <Text
+            style={{ fontSize: 18, color: Colors.bold_text, fontWeight: "500" }}
+          >
+            {props.title}
+          </Text>
+        )}
+
         {props.hasPage && (
           <MaterialIcons
             name="change-circle"

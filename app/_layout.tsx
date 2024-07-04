@@ -1,19 +1,19 @@
-import { useFonts } from 'expo-font';
-import { Slot, SplashScreen, Stack, useRouter, useSegments } from 'expo-router';
-import { useEffect } from 'react';
-import { Ionicons } from '@expo/vector-icons';
-import { TouchableOpacity } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { AuthProvider, useAuth } from '@/hooks/Auth';
+import { useFonts } from "expo-font";
+import { Slot, SplashScreen, Stack, useRouter, useSegments } from "expo-router";
+import { useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { TouchableOpacity } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { AuthProvider, useAuth } from "@/hooks/Auth";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 const InitialLayout = () => {
   const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
-  const { user } = useAuth();
+  const { session } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
@@ -29,16 +29,16 @@ const InitialLayout = () => {
   }, [loaded]);
 
   useEffect(() => {
-    const inAuthGroup = segments[0] === '(auth)';
+    const inAuthGroup = segments[0] === "(auth)";
 
-    if (user && !inAuthGroup) {
-      router.replace('/(auth)/(drawer)/(chat)/new');
-    } else if (!user) {
-      router.replace('/');
+    if (session && !inAuthGroup) {
+      router.replace("/(auth)/(drawer)/(chat)/new");
+    } else if (!session) {
+      router.replace("/");
     }
-  }, [user]);
+  }, [session]);
 
-  if (!loaded || !user) {
+  if (!loaded || !session) {
     return <Slot />;
   }
 
@@ -53,10 +53,10 @@ const InitialLayout = () => {
       <Stack.Screen
         name="login"
         options={{
-          presentation: 'modal',
-          title: '',
+          presentation: "modal",
+          title: "",
           headerTitleStyle: {
-            fontFamily: 'mon-sb',
+            fontFamily: "mon-sb",
           },
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>

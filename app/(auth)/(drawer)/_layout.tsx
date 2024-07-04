@@ -7,7 +7,6 @@ import {
 import { Link, useNavigation, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
-  Image,
   Text,
   View,
   StyleSheet,
@@ -27,18 +26,25 @@ import * as ContextMenu from "zeego/context-menu";
 import { Keyboard } from "react-native";
 import { useAuth } from "@/hooks/Auth";
 import { deleteChat, getChats, renameChat } from "@/utils/database";
+import { Image } from "expo-image";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 export const CustomDrawerContent = (props: any) => {
   const { bottom, top } = useSafeAreaInsets();
   const { user } = useAuth();
   const isDrawerOpen = useDrawerStatus() === "open";
   const [history, setHistory] = useState<Chat[]>([]);
+  const [searchHistory, setSearchHistory] = useState<Chat[]>([]);
   const router = useRouter();
 
   useEffect(() => {
     loadChats();
     Keyboard.dismiss();
   }, [isDrawerOpen]);
+
+  useEffect(() => {
+    setSearchHistory(history);
+  }, [history]);
 
   const loadChats = async () => {
     // Load chats from SQLite
@@ -80,6 +86,16 @@ export const CustomDrawerContent = (props: any) => {
     );
   };
 
+  const onSearch = (search: string) => {
+    console.log(search);
+
+    setSearchHistory(
+      history.filter((h) =>
+        h.title.toLowerCase().includes(search.toLowerCase())
+      )
+    );
+  };
+
   return (
     <View style={{ flex: 1, marginTop: top }}>
       <View style={{ backgroundColor: "#fff", paddingBottom: 10 }}>
@@ -93,6 +109,7 @@ export const CustomDrawerContent = (props: any) => {
           <TextInput
             style={styles.input}
             placeholder="Search"
+            onChangeText={onSearch}
             underlineColorAndroid="transparent"
           />
         </View>
@@ -103,64 +120,71 @@ export const CustomDrawerContent = (props: any) => {
         contentContainerStyle={{ backgroundColor: "#fff", paddingTop: 0 }}
       >
         <DrawerItemList {...props} />
-        {history.map((chat) => (
-          <ContextMenu.Root key={chat.id}>
-            <ContextMenu.Trigger>
-              <DrawerItem
-                label={chat.title}
-                onPress={() =>
-                  router.push(`/(auth)/(drawer)/(chat)/${chat.id}`)
-                }
-                inactiveTintColor="#000"
-              />
-            </ContextMenu.Trigger>
-            <ContextMenu.Content
-              alignOffset={0}
-              avoidCollisions
-              collisionPadding={0}
-              loop={false}
-            >
-              <ContextMenu.Preview>
-                {() => (
-                  <View
-                    style={{
-                      padding: 16,
-                      height: 200,
-                      backgroundColor: "#fff",
-                    }}
-                  >
-                    <Text>{chat.title}</Text>
-                  </View>
-                )}
-              </ContextMenu.Preview>
 
-              <ContextMenu.Item
-                key={"rename"}
-                onSelect={() => onRenameChat(chat.id)}
-              >
-                <ContextMenu.ItemTitle>Rename</ContextMenu.ItemTitle>
-                <ContextMenu.ItemIcon
-                  ios={{
-                    name: "pencil",
-                    pointSize: 18,
-                  }}
+        {searchHistory.map((chat) => (
+          <Animated.View
+            key={chat.id}
+            entering={FadeIn.duration(600)}
+            exiting={FadeOut.duration(400)}
+          >
+            <ContextMenu.Root>
+              <ContextMenu.Trigger>
+                <DrawerItem
+                  label={chat.title}
+                  onPress={() =>
+                    router.push(`/(auth)/(drawer)/(chat)/${chat.id}`)
+                  }
+                  inactiveTintColor="#000"
                 />
-              </ContextMenu.Item>
-              <ContextMenu.Item
-                key={"delete"}
-                onSelect={() => onDeleteChat(chat.id)}
-                destructive
+              </ContextMenu.Trigger>
+              <ContextMenu.Content
+                alignOffset={0}
+                avoidCollisions
+                collisionPadding={0}
+                loop={false}
               >
-                <ContextMenu.ItemTitle>Delete</ContextMenu.ItemTitle>
-                <ContextMenu.ItemIcon
-                  ios={{
-                    name: "trash",
-                    pointSize: 18,
-                  }}
-                />
-              </ContextMenu.Item>
-            </ContextMenu.Content>
-          </ContextMenu.Root>
+                <ContextMenu.Preview>
+                  {() => (
+                    <View
+                      style={{
+                        padding: 16,
+                        height: 200,
+                        backgroundColor: "#fff",
+                      }}
+                    >
+                      <Text>{chat.title}</Text>
+                    </View>
+                  )}
+                </ContextMenu.Preview>
+
+                <ContextMenu.Item
+                  key={"rename"}
+                  onSelect={() => onRenameChat(chat.id)}
+                >
+                  <ContextMenu.ItemTitle>Rename</ContextMenu.ItemTitle>
+                  <ContextMenu.ItemIcon
+                    ios={{
+                      name: "pencil",
+                      pointSize: 18,
+                    }}
+                  />
+                </ContextMenu.Item>
+                <ContextMenu.Item
+                  key={"delete"}
+                  onSelect={() => onDeleteChat(chat.id)}
+                  destructive
+                >
+                  <ContextMenu.ItemTitle>Delete</ContextMenu.ItemTitle>
+                  <ContextMenu.ItemIcon
+                    ios={{
+                      name: "trash",
+                      pointSize: 18,
+                    }}
+                  />
+                </ContextMenu.Item>
+              </ContextMenu.Content>
+            </ContextMenu.Root>
+          </Animated.View>
         ))}
       </DrawerContentScrollView>
 
@@ -174,10 +198,14 @@ export const CustomDrawerContent = (props: any) => {
         <Link href="/(auth)/(modal)/settings" asChild>
           <TouchableOpacity style={styles.footer}>
             <Image
-              source={{ uri: "https://galaxies.dev/img/meerkat_2.jpg" }}
+              source={{
+                uri: user?.imageUrl ?? "https://galaxies.dev/img/meerkat_2.jpg",
+              }}
               style={styles.avatar}
+              contentFit="cover"
+              transition={1000}
             />
-            <Text style={styles.userName}>{user?.email ?? ""}</Text>
+            <Text style={styles.userName}>{user?.name ?? ""}</Text>
             <Ionicons
               name="ellipsis-horizontal"
               size={24}

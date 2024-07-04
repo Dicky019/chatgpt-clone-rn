@@ -1,83 +1,165 @@
-import { supabase } from '@/utils/supabase';
-import { AuthError, AuthResponse, AuthTokenResponsePassword, Session, User } from '@supabase/supabase-js';
-import { useContext, useState, useEffect, createContext } from 'react';
+import { supabase } from "@/utils/supabase";
+import {
+  AuthError,
+  AuthResponse,
+  AuthTokenResponsePassword,
+  OAuthResponse,
+  PostgrestSingleResponse,
+  Provider,
+  Session,
+} from "@supabase/supabase-js";
+import {
+  useContext,
+  useState,
+  useEffect,
+  createContext,
+  Dispatch,
+  SetStateAction,
+} from "react";
+import { Alert } from "react-native";
+
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  imageUrl: string;
+}
 
 // create a context for authentication
 interface AuthContextProps {
-    session: Session | null | undefined,
-    user: User | null | undefined,
-    signOut: () => Promise<{
-        error: AuthError | null;
-    }>,
-    signInEmail: (email: string, password: string) => Promise<AuthTokenResponsePassword>,
-    signUpEmail: (email: string, password: string) => Promise<AuthResponse>
+  session: Session | null | undefined;
+  user: User | null | undefined;
+  signOut: () => Promise<{
+    error: AuthError | null;
+  }>;
+  signInEmail: (
+    email: string,
+    password: string
+  ) => Promise<AuthTokenResponsePassword>;
+  signInWithOAuth: (provider: Provider) => Promise<OAuthResponse>;
+  signUpEmail: (email: string, password: string) => Promise<AuthResponse>;
+
+  setUser: (name: string, avatarUrl: string) => void;
 }
 
-const AuthContext = createContext<AuthContextProps>({
-    session: null,
-    user: null,
-    signOut: () => supabase.auth.signOut(),
-    signInEmail: (email: string, password: string) => supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
+const supabaseAuthService = {
+  signOut: () => supabase.auth.signOut(),
+  signInWithOAuth: (provider: Provider) =>
+    supabase.auth.signInWithOAuth({
+      provider: provider,
     }),
-    signUpEmail: (email: string, password: string) => supabase.auth.signUp({
-        email: email,
-        password: password,
-    })
+  signInEmail: (email: string, password: string) =>
+    supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
+    }),
+  signUpEmail: (email: string, password: string) =>
+    supabase.auth.signUp({
+      email: email,
+      password: password,
+    }),
+  setUser: (name: string, avatarUrl: string) => {
+    console.log("🚀 ~ avatarUrl:", avatarUrl);
+    console.log("🚀 ~ name:", name);
+  },
+};
+
+const AuthContext = createContext<AuthContextProps>({
+  session: null,
+  user: null,
+  ...supabaseAuthService,
 });
 
 export const AuthProvider = ({ children }: any) => {
-    const [user, setUser] = useState<User>()
-    const [session, setSession] = useState<Session | null>();
-    const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User>();
+  const [session, setSession] = useState<Session | null>();
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const setData = async () => {
-            const { data: { session }, error } = await supabase.auth.getSession();
-            if (error) throw error;
-            setSession(session)
-            setUser(session?.user)
-            setLoading(false);
-        };
+  async function getProfile(email: string, id: string) {
+    try {
+      setLoading(true);
 
-        const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-            console.log("🚀 ~ const{data:listener}=supabase.auth.onAuthStateChange ~ session:", session?.user.id)
-            setSession(session);
-            setUser(session?.user)
-            setLoading(false)
+      const { data, error, status } = await supabase
+        .from("user")
+        .select(`name, image_url`)
+        .eq("id", id)
+        .single();
+      if (error && status !== 406) {
+        throw error;
+      }
+
+      if (data) {
+        setUser({
+          email,
+          id,
+          imageUrl: data.image_url,
+          name: data.name,
         });
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert(error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
 
-        setData();
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (_event === "SIGNED_OUT") {
+          setSession(undefined);
+          setUser(undefined);
+          return;
+        }
 
-        return () => {
-            listener?.subscription.unsubscribe();
-        };
-    }, []);
+        if (session) {
+          setSession(session);
+          const { email, id } = session.user;
 
-    const value = {
-        session,
-        user,
-        signOut: () => supabase.auth.signOut(),
-        signInEmail: (email: string, password: string) => supabase.auth.signInWithPassword({
-            email: email,
-            password: password,
-        }),
-        signUpEmail: (email: string, password: string) => supabase.auth.signUp({
-            email: email,
-            password: password,
-        })
-    };
+          setUser({
+            email: email ?? "-",
+            id,
+            imageUrl: "https://galaxies.dev/img/meerkat_2.jpg",
+            name: "-",
+          });
 
-    // use a provider to pass down the value
-    return (
-        <AuthContext.Provider value={value}>
-            {!loading && children}
-        </AuthContext.Provider>
+          await getProfile(email ?? "-", id);
+        }
+        setLoading(false);
+      }
     );
+
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, []);
+
+  const value = {
+    ...supabaseAuthService,
+    session,
+    user,
+    setUser: (name: string, avatarUrl: string) => {
+      if (user) {
+        setUser({
+          ...user,
+          name,
+          imageUrl: avatarUrl,
+        });
+      }
+    },
+  };
+
+  // use a provider to pass down the value
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };
 
 // export the useAuth hook
 export const useAuth = () => {
-    return useContext(AuthContext);
+  return useContext(AuthContext);
 };
