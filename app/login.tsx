@@ -92,6 +92,14 @@ const Login = () => {
           secureTextEntry
           style={styles.inputField}
         />
+        <TextInput
+          editable
+          multiline
+          numberOfLines={5}
+          placeholder="password"
+          style={[styles.inputField, { height: 400 }]}
+          keyboardType="numeric"
+        />
       </View>
 
       {isLogin ? (

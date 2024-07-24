@@ -116,6 +116,7 @@ const ChatMessage = ({
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
